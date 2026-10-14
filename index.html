@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="A focused, local quiz-practice app for the Psychology of Learning question bank.">
+  <title>Psychology of Learning — Quiz Practice</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="Psychology of Learning quiz home">
+        <span class="brand-mark" aria-hidden="true">ψ</span>
+        <span class="brand-copy">
+          <strong>END SEMESTER</strong>
+          <span>Psychology of Learning</span>
+        </span>
+      </a>
+      <div class="header-note"><span class="offline-dot" aria-hidden="true"></span> Works locally · No account needed</div>
+    </div>
+  </header>
+
+  <main id="main-content" class="page-shell">
+    <section class="intro" id="top" aria-labelledby="page-title">
+      <p class="eyebrow">STUDY AT YOUR OWN PACE</p>
+      <h1 id="page-title">Make every practice session count.</h1>
+      <p class="intro-copy">Choose a weekly test to simulate an exam, or practise a whole year with instant feedback after each answer.</p>
+    </section>
+
+    <div id="statusBanner" class="status-banner status-loading" role="status" aria-live="polite">
+      <span class="status-symbol" aria-hidden="true">…</span>
+      <span id="statusMessage">Loading your question bank…</span>
+    </div>
+
+    <section id="setupPanel" class="panel setup-panel" aria-labelledby="setup-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">GET STARTED</p>
+          <h2 id="setup-heading">Set up your practice</h2>
+        </div>
+        <div id="dataInfo" class="data-info">Preparing question bank…</div>
+      </div>
+
+      <div id="setupMessage" class="inline-message hidden" role="alert"></div>
+
+      <div class="setup-grid">
+        <div class="field field-wide">
+          <label for="modeSelect">Practice mode</label>
+          <select id="modeSelect" name="mode" disabled>
+            <option value="weekly">Weekly Test</option>
+            <option value="year">Practice One Year</option>
+            <option value="all">All Years Mixed Practice</option>
+          </select>
+          <p id="modeDescription" class="field-help">Answer the whole week first. Correct answers and feedback appear only after you submit.</p>
+        </div>
+
+        <div id="yearField" class="field">
+          <label for="yearSelect">Year</label>
+          <select id="yearSelect" name="year" disabled></select>
+          <p class="field-help">Years are loaded from your question bank.</p>
+        </div>
+
+        <div id="weekField" class="field">
+          <label for="weekSelect">Week</label>
+          <select id="weekSelect" name="week" disabled></select>
+          <p class="field-help">Week 0 is included when available.</p>
+        </div>
+      </div>
+
+      <div class="settings-block">
+        <div class="settings-heading">
+          <h3>Session settings</h3>
+          <span class="settings-hint">You can change these for each session.</span>
+        </div>
+        <div class="settings-row">
+          <label class="switch-option" for="shuffleQuestions">
+            <input id="shuffleQuestions" type="checkbox" checked disabled>
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span class="switch-copy"><strong>Shuffle questions</strong><small>Mix the question order</small></span>
+          </label>
+          <label class="switch-option" for="shuffleOptions">
+            <input id="shuffleOptions" type="checkbox" checked disabled>
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span class="switch-copy"><strong>Shuffle answer options</strong><small>Mix choices independently</small></span>
+          </label>
+          <label class="switch-option" for="excludeFlagged">
+            <input id="excludeFlagged" type="checkbox" disabled>
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span class="switch-copy"><strong>Exclude flagged questions</strong><small>Skip questions marked for source review</small></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setup-footer">
+        <p class="privacy-note"><span aria-hidden="true">✓</span> Your practice stays in this browser. No data is uploaded.</p>
+        <button id="startButton" class="button button-primary button-large" type="button" disabled>Start Quiz <span aria-hidden="true">→</span></button>
+      </div>
+
+      <details id="diagnosticsDetails" class="diagnostics hidden">
+        <summary><span id="diagnosticsSummary">Data diagnostics</span></summary>
+        <p class="field-help">Records that fail essential validation are skipped rather than scored incorrectly. These diagnostics are for troubleshooting; the original JSON file is not changed.</p>
+        <ul id="diagnosticsList" class="diagnostics-list"></ul>
+      </details>
+    </section>
+
+    <section id="quizPanel" class="quiz-panel hidden" aria-labelledby="sessionTitle">
+      <div class="session-topline">
+        <div class="session-heading-wrap">
+          <p id="sessionModeLabel" class="eyebrow">WEEKLY TEST</p>
+          <h2 id="sessionTitle">Your quiz</h2>
+          <p id="sessionSubline" class="session-subline"></p>
+        </div>
+        <button id="changeSetupButton" class="button button-secondary" type="button">← Change setup</button>
+      </div>
+
+      <div id="weeklyResultSummary" class="result-summary hidden" aria-live="polite"></div>
+
+      <div id="weeklyArea" class="hidden">
+        <div class="mode-instructions">
+          <span class="instruction-icon" aria-hidden="true">✎</span>
+          <p>Your answers are not marked while you work. Submit the test to see your score and the correct answer beneath each question.</p>
+        </div>
+        <div id="weeklyQuestionList" class="question-list"></div>
+        <div class="session-actions weekly-actions">
+          <p id="unansweredHint" class="field-help">You can submit with unanswered questions; they will be counted separately.</p>
+          <button id="submitWeeklyButton" class="button button-primary button-large" type="button">Submit Test <span aria-hidden="true">→</span></button>
+          <div id="weeklyPostActions" class="post-actions hidden">
+            <button id="retryWeeklyButton" class="button button-primary" type="button">Retry This Week</button>
+            <button id="reviewWeeklyButton" class="button button-secondary" type="button">Review Answers</button>
+            <button id="chooseAnotherWeekButton" class="button button-quiet" type="button">Choose Another Week</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="instantArea" class="hidden">
+        <div class="practice-status-row">
+          <div class="progress-wrap">
+            <div class="progress-label-row"><span id="instantProgressText">Question 1 of 10</span><span id="instantProgressPercent">10%</span></div>
+            <div class="progress-track" role="progressbar" aria-label="Question navigation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="instantProgressBar"><span id="instantProgressFill"></span></div>
+          </div>
+          <div id="instantLiveStats" class="live-stats" aria-live="polite"></div>
+        </div>
+        <div id="instantQuestion" class="instant-question"></div>
+        <div class="session-actions instant-actions">
+          <button id="previousQuestionButton" class="button button-secondary" type="button">← Previous</button>
+          <div class="action-spacer"></div>
+          <button id="finishPracticeButton" class="button button-quiet" type="button">Finish Practice</button>
+          <button id="nextQuestionButton" class="button button-primary" type="button">Next →</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultsPanel" class="panel results-panel hidden" aria-labelledby="resultsHeading">
+      <p class="eyebrow">SESSION COMPLETE</p>
+      <h2 id="resultsHeading">Your practice results</h2>
+      <p id="resultsContext" class="results-context"></p>
+      <div id="finalSummary" class="result-summary final-summary" aria-live="polite"></div>
+      <div class="results-actions">
+        <button id="reviewAllButton" class="button button-primary" type="button">Review All Answers</button>
+        <button id="retrySessionButton" class="button button-secondary" type="button">Retry Same Session</button>
+        <button id="returnSetupButton" class="button button-quiet" type="button">Choose Another Mode</button>
+      </div>
+      <div id="reviewList" class="review-list hidden"></div>
+    </section>
+
+    <footer class="site-footer">
+      <p>Built for focused revision. Questions and answers come from your supplied question bank.</p>
+      <p class="footer-small">If the bank does not load, run this folder with VS Code Live Server or Python's local static server. See <code>README.md</code>.</p>
+    </footer>
+  </main>
+</body>
+</html>
